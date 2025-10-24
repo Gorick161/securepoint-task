@@ -38,15 +38,33 @@ if (!$h) {
     exit(1);
 }
 
+// serial => count
+$counts = [];   
+
 while (!feof($h)) {
 
     $line = fgets($h);
     if ($line === false) break;
-    
+
     // parsing
     if (!preg_match('/"\s(\d{3})\s/', $line, $mStatus)) continue;
     $status = (int)$mStatus[1];
     if ($only200 && $status !== 200) continue;
+
+    if (!preg_match('/\bserial=([A-Fa-f0-9]+)\b/', $line, $mSerial)) continue;
+    $serial = $mSerial[1];
+
+    if (!isset($counts[$serial])) $counts[$serial] = 0;
+    $counts[$serial]++;
 }
 
 fclose($h);
+
+// sort and get top N
+arsort($counts);
+$topList = array_slice($counts, 0, $top, true);
+
+echo "Task 1: Top " . $top . " serials" . ($only200 ? " (status=200)" : " (all status)") . "\n";
+foreach ($topList as $s => $c) {
+    echo $s . "\t" . $c . "\n";
+}
