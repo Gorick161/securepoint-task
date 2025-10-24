@@ -68,3 +68,13 @@ echo "Task 1: Top " . $top . " serials" . ($only200 ? " (status=200)" : " (all s
 foreach ($topList as $s => $c) {
     echo $s . "\t" . $c . "\n";
 }
+
+// write CSV
+$fp = fopen($csv . "/task1_top_serials.csv", "w");
+fputcsv($fp, ["serial", "count", "filter"]);
+foreach ($topList as $s => $c) {
+    fputcsv($fp, [$s, $c, $only200 ? "200" : "all"]);
+}
+fclose($fp);
+
+echo "CSV: " . $csv . PHP_EOL;
