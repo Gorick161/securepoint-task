@@ -12,6 +12,15 @@ $top = 10;
 $csv = "./out";
 $only200 = true;
 
+//optional cli options
+for ($i = 2; $i < $argc; $i++) {
+
+    if (strpos($argv[$i], "--top=") === 0) $top = (int)substr($argv[$i], 6);
+    elseif (strpos($argv[$i], "--csv-dir=") === 0) $csv = substr($argv[$i], 10);
+    elseif ($argv[$i] === "--only-200") $only200 = true;
+    elseif ($argv[$i] === "--all-status") $only200 = false;
+}
+
 if (!is_file($log)) {
     fwrite(STDERR, "File not found\n");
     exit(1);
@@ -30,8 +39,14 @@ if (!$h) {
 }
 
 while (!feof($h)) {
+
     $line = fgets($h);
     if ($line === false) break;
+    
     // parsing
+    if (!preg_match('/"\s(\d{3})\s/', $line, $mStatus)) continue;
+    $status = (int)$mStatus[1];
+    if ($only200 && $status !== 200) continue;
 }
+
 fclose($h);
