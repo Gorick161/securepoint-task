@@ -43,6 +43,42 @@ while (!feof($h)) {
     $line = fgets($h);
     if ($line === false) break;
 
+    // check status code
+    if (!preg_match('/"\s(\d{3})\s/', $line, $mStatus)) continue;
+    $status = (int)$mStatus[1];
+
+    // only successful requests
+    if ($status !== 200) continue;
+
+    // serialnumber extraction
+    if (!preg_match('/\bserial=([A-Fa-f0-9]+)\b/', $line, $mSerial)) continue;
+    $serial = $mSerial[1];
+
+    // specs extraction base64
+    if (!preg_match('/\bspecs=([A-Za-z0-9+\/=]+)/', $line, $mSpecs)) continue;
+    $b64 = $mSpecs[1];
+
+    // base64-decoding strict
+    $raw = base64_decode($b64, true);
+    if ($raw === false) continue;
+
+    // gzip-decode
+    $json = @gzdecode($raw);
+    if ($json === false || $json === null) continue;
+
+    // JSON-decoding
+    $specs = json_decode($json, true);
+    if (!is_array($specs)) continue;
+
+    // MAC extraction
+    if (!isset($specs['mac'])) continue;
+    $mac = strtolower(trim((string)$specs['mac']));
+    if ($mac === '') continue;
+
+    // Uniqueness-Set per serial
+    if (!isset($serialToMacs[$serial])) $serialToMacs[$serial] = [];
+    // Set-Insert
+    $serialToMacs[$serial][$mac] = true; 
 }
 
 fclose($h);
