@@ -82,3 +82,18 @@ while (!feof($h)) {
 }
 
 fclose($h);
+
+// collect violations
+$violations = [];
+foreach ($serialToMacs as $s => $macSet) {
+    $count = count($macSet);
+    if ($count > 1) {
+        $violations[$s] = $count;
+    }
+}
+
+// sort by number of devices, descending
+arsort($violations);
+
+// top 10
+$topList = array_slice($violations, 0, 10, true);
