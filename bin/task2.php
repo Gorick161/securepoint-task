@@ -27,3 +27,22 @@ if (!is_file($log)) {
 if (!is_dir($csvDir)) {
     mkdir($csvDir, 0777, true);
 }
+
+// open file
+$h = fopen($log, 'r');
+if (!$h) {
+    fwrite(STDERR, "Cannot open file\n");
+    exit(1);
+}
+
+// for mapping serial to MAC addresses
+$serialToMacs = [];
+
+// !!!
+while (!feof($h)) {
+    $line = fgets($h);
+    if ($line === false) break;
+
+}
+
+fclose($h);
