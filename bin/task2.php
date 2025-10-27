@@ -2,7 +2,6 @@
 
 if (PHP_SAPI !== 'cli') exit(1);
 
-// check arguments
 if ($argc < 2) {
     fwrite(STDERR, "Usage: php bin/task2.php <logfile> [--csv-dir=./out]\n");
     exit(1);
@@ -38,7 +37,7 @@ if (!$h) {
 // for mapping serial to MAC addresses
 $serialToMacs = [];
 
-// !!!
+// main loop
 while (!feof($h)) {
     $line = fgets($h);
     if ($line === false) break;
@@ -62,7 +61,7 @@ while (!feof($h)) {
     $raw = base64_decode($b64, true);
     if ($raw === false) continue;
 
-    // gzip-decode
+    // gzip-decode (some specs fields might be malformed, suppress warnings)
     $json = @gzdecode($raw);
     if ($json === false || $json === null) continue;
 
@@ -97,3 +96,18 @@ arsort($violations);
 
 // top 10
 $topList = array_slice($violations, 0, 10, true);
+
+echo "Task 2: Top 10 license serials with multiple distinct MAC addresses\n";
+foreach ($topList as $s => $n) {
+    echo $s . "\t" . $n . "\n";
+}
+
+// write csv
+$fp = fopen($csvDir . "/task2_multi_device_licenses.csv", "w");
+fputcsv($fp, ["serial", "distinct_devices"]);
+foreach ($topList as $s => $n) {
+    fputcsv($fp, [$s, $n]);
+}
+fclose($fp);
+
+echo "CSV: " . $csvDir . PHP_EOL;
